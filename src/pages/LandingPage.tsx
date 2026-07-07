@@ -118,65 +118,209 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
           transition={{ duration: 0.7, delay: 0.4, ease: [0.4, 0, 0.2, 1] }}
           className="max-w-5xl mx-auto mt-16 relative"
         >
-          <div className="rounded-3xl overflow-hidden border border-surface-3 dark:border-slate-800 shadow-[0_40px_100px_-20px_rgba(15,23,42,0.18)]">
+          {/* Glow under the mockup */}
+          <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-brand-500/20 blur-3xl rounded-full pointer-events-none" />
+
+          <div className="relative rounded-[28px] overflow-hidden border border-surface-3/80 dark:border-slate-800 shadow-[0_48px_120px_-20px_rgba(15,23,42,0.22),0_0_0_1px_rgba(15,23,42,0.04)]">
             {/* Browser chrome */}
-            <div className="flex items-center gap-2 px-5 py-3.5 bg-surface-2 dark:bg-slate-800 border-b border-surface-3 dark:border-slate-700">
-              <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-400"/><div className="w-3 h-3 rounded-full bg-yellow-400"/><div className="w-3 h-3 rounded-full bg-emerald-400"/></div>
-              <div className="flex-1 mx-6 h-7 bg-white dark:bg-slate-700 rounded-xl flex items-center px-3.5 border border-surface-3 dark:border-slate-600">
-                <span className="text-xs text-ink-tertiary">app.quotera.ai/dashboard</span>
+            <div className="flex items-center gap-2 px-5 py-3 bg-[#F1F5F9] dark:bg-[#0A1020] border-b border-surface-3 dark:border-slate-800">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-[#FF5F57]"/>
+                <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"/>
+                <div className="w-3 h-3 rounded-full bg-[#28CA41]"/>
+              </div>
+              <div className="flex-1 mx-4 h-6 bg-white dark:bg-[#111B2E] rounded-lg flex items-center gap-2 px-3 border border-surface-3 dark:border-slate-700">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+                <span className="text-[11px] text-ink-tertiary">app.quotera.ai/dashboard</span>
               </div>
             </div>
-            {/* Dashboard mock */}
-            <div className="flex bg-surface-1 dark:bg-[#0D1117]" style={{ height: 440 }}>
+
+            {/* Dashboard mock — matches new design */}
+            <div className="flex bg-[#F8FAFC] dark:bg-[#060B14]" style={{ height: 460 }}>
+
               {/* Sidebar */}
-              <div className="w-48 flex-shrink-0 bg-white dark:bg-[#0D1117] border-r border-surface-3 dark:border-slate-800 flex flex-col py-4 px-3 gap-1">
-                <div className="flex items-center gap-2 px-2 pb-3 mb-2 border-b border-surface-3 dark:border-slate-800">
-                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-sm"><Zap size={13} className="text-white" fill="white" /></div>
-                  <span className="text-xs font-bold text-ink dark:text-white">Quotera <span className="text-brand-600">AI</span></span>
+              <div className="w-44 flex-shrink-0 bg-white dark:bg-[#070C18] border-r border-surface-3/70 dark:border-[#0F1D30] flex flex-col py-3 px-2.5 gap-0.5">
+                {/* Logo */}
+                <div className="flex items-center gap-2 px-2 pb-2.5 mb-1.5 border-b border-surface-3/60 dark:border-[#0F1D30]">
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-brand-400 to-brand-700 flex items-center justify-center shadow-sm flex-shrink-0">
+                    <Zap size={11} className="text-white" fill="white" />
+                  </div>
+                  <span className="text-[11px] font-black text-ink dark:text-white">Quotera<span className="text-brand-600"> AI</span></span>
                 </div>
-                {['Dashboard','Quotes','Clients','Proposals','Analytics'].map((label, i) => (
-                  <div key={label} className={`px-2.5 py-2 rounded-xl text-xs font-semibold ${i === 0 ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400' : 'text-ink-tertiary'}`}>{label}</div>
+                {/* Search */}
+                <div className="mx-1 mb-1 h-6 bg-surface-2 dark:bg-[#0D1828] border border-surface-3 dark:border-[#1A2B42] rounded-lg flex items-center gap-1.5 px-2">
+                  <div className="w-2.5 h-2.5 text-ink-tertiary flex-shrink-0">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" className="text-ink-tertiary w-full h-full"><circle cx="7" cy="7" r="4"/><path d="m10 10 3 3"/></svg>
+                  </div>
+                  <span className="text-[9px] text-ink-tertiary flex-1">Search...</span>
+                  <span className="text-[8px] text-ink-tertiary font-mono opacity-60">⌘K</span>
+                </div>
+                {/* Nav items */}
+                {[
+                  { label: 'Dashboard', active: true },
+                  { label: 'Quotes',    active: false },
+                  { label: 'Clients',   active: false },
+                  { label: 'Proposals', active: false },
+                  { label: 'Analytics', active: false },
+                ].map(item => (
+                  <div key={item.label}
+                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition-colors
+                      ${item.active
+                        ? 'bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300'
+                        : 'text-ink-tertiary'}`}
+                  >
+                    <div className={`w-3 h-3 rounded-md flex-shrink-0 ${item.active ? 'bg-brand-200 dark:bg-brand-800' : 'bg-surface-2 dark:bg-[#111B2E]'}`} />
+                    {item.label}
+                    {item.active && <div className="ml-auto w-1 h-1 rounded-full bg-brand-500" />}
+                  </div>
                 ))}
+
+                {/* AI Banner */}
+                <div className="mt-auto mx-1 rounded-xl overflow-hidden relative"
+                  style={{ background: 'linear-gradient(135deg, #001240 0%, #003280 50%, #0052CC 100%)' }}>
+                  <div className="p-2.5">
+                    <div className="flex items-center gap-1 mb-1">
+                      <Sparkles size={8} className="text-accent-300" />
+                      <span className="text-[8px] font-black text-white/80 uppercase tracking-widest">AI Copilot</span>
+                    </div>
+                    <p className="text-[8px] text-blue-200/60 mb-1.5 leading-tight">Generate a quote in 30 seconds.</p>
+                    <div className="w-full text-[8px] font-bold text-white py-1 rounded-lg bg-white/10 border border-white/15 text-center">Try Now →</div>
+                  </div>
+                </div>
+
+                {/* User chip */}
+                <div className="mt-2 mx-1 flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-surface-1 dark:bg-[#0D1828] border border-surface-3 dark:border-[#1A2B42]">
+                  <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-brand-400 to-brand-700 flex items-center justify-center text-white text-[8px] font-black flex-shrink-0">R</div>
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-bold text-ink dark:text-white truncate leading-none">Riya Desai</p>
+                    <p className="text-[8px] text-ink-tertiary leading-none mt-0.5">Pro Plan</p>
+                  </div>
+                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                </div>
               </div>
-              {/* Main */}
-              <div className="flex-1 p-5 flex flex-col gap-3 overflow-hidden">
-                <div className="flex items-center justify-between mb-1">
-                  <div><p className="text-xs font-bold text-ink dark:text-white">Dashboard</p><p className="text-[10px] text-ink-tertiary">Good morning, Riya 👋</p></div>
-                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-brand-400 to-brand-700 flex items-center justify-center text-white text-xs font-bold">R</div>
-                </div>
-                {/* KPIs */}
-                <div className="grid grid-cols-4 gap-2.5">
-                  {[{l:"Today's",v:'7',c:'text-brand-600'},{l:'Accepted',v:'12',c:'text-emerald-600'},{l:'Pending',v:'5',c:'text-amber-600'},{l:'Revenue',v:'₹6.3L',c:'text-ink dark:text-white'}].map(s=>(
-                    <div key={s.l} className="bg-white dark:bg-slate-900 rounded-2xl p-3 border border-surface-3 dark:border-slate-800">
-                      <p className="text-[9px] text-ink-tertiary mb-1">{s.l}</p>
-                      <p className={`text-sm font-bold ${s.c}`}>{s.v}</p>
+
+              {/* Main content */}
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Topbar */}
+                <div className="h-10 flex items-center justify-between px-4 bg-white/80 dark:bg-[#060B14]/80 border-b border-surface-3/60 dark:border-[#0F1D30] flex-shrink-0">
+                  <div>
+                    <p className="text-[10px] font-bold text-ink dark:text-white leading-none">Dashboard</p>
+                    <p className="text-[8px] text-ink-tertiary leading-none mt-0.5">Monday, July 7, 2025</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 px-2.5 bg-gradient-to-b from-[#4096FF] to-[#0057E3] rounded-lg flex items-center gap-1">
+                      <span className="text-[8px] font-bold text-white">+ New Quote</span>
                     </div>
-                  ))}
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-brand-400 to-brand-700 flex items-center justify-center text-white text-[9px] font-bold">R</div>
+                  </div>
                 </div>
-                {/* Charts row */}
-                <div className="grid grid-cols-5 gap-2.5 flex-1">
-                  <div className="col-span-3 bg-white dark:bg-slate-900 rounded-2xl border border-surface-3 dark:border-slate-800 p-3 flex flex-col">
-                    <p className="text-[10px] font-bold text-ink dark:text-white mb-2">Revenue Overview</p>
-                    <div className="flex-1 flex items-end gap-1.5">
-                      {[35,48,28,62,75,90].map((h,i)=>(
-                        <div key={i} className="flex-1 rounded-t-lg" style={{ height:`${h}%`, backgroundColor: i===5 ? '#2563eb':'#dbeafe' }} />
+
+                {/* Page content */}
+                <div className="flex-1 overflow-hidden p-3 flex flex-col gap-2.5">
+
+                  {/* Hero banner */}
+                  <div className="rounded-2xl p-3.5 relative overflow-hidden flex-shrink-0"
+                    style={{ background: 'linear-gradient(135deg, #001240 0%, #003080 40%, #0055D4 75%, #1A7BFF 100%)' }}>
+                    <div className="absolute right-0 top-0 w-24 h-24 rounded-full opacity-20"
+                      style={{ background: 'radial-gradient(circle, rgba(64,150,255,0.7) 0%, transparent 70%)', transform: 'translate(30%,-30%)' }} />
+                    <p className="text-[10px] font-black text-white mb-0.5">Good morning, Riya 👋</p>
+                    <p className="text-[8px] text-blue-200/70 mb-2">5 pending quotes need attention today.</p>
+                    <div className="flex gap-3">
+                      {[{l:'Revenue',v:'₹6.34L'},{l:'Win Rate',v:'68%'},{l:'Quotes',v:'19'}].map(s=>(
+                        <div key={s.l}>
+                          <p className="text-[11px] font-black text-white leading-none">{s.v}</p>
+                          <p className="text-[8px] text-blue-200/60 leading-none mt-0.5">{s.l}</p>
+                        </div>
                       ))}
-                    </div>
-                    <div className="flex justify-between mt-1.5">
-                      {['O','N','D','J','F','M'].map(m=><span key={m} className="text-[8px] text-ink-tertiary flex-1 text-center">{m}</span>)}
+                      {/* Score ring preview */}
+                      <div className="ml-auto flex flex-col items-center bg-white/8 border border-white/12 rounded-xl px-2 py-1">
+                        <p className="text-[7px] font-black text-white/60 uppercase tracking-wide mb-0.5">Score</p>
+                        <p className="text-base font-black text-white leading-none">84</p>
+                        <p className="text-[7px] text-emerald-300 font-bold">Excellent</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-surface-3 dark:border-slate-800 p-3">
-                    <p className="text-[10px] font-bold text-ink dark:text-white mb-2">Recent Quotes</p>
-                    {[{n:'Priya S.',a:'₹1.65L',c:'bg-emerald-500'},{n:'Arjun M.',a:'₹3.48L',c:'bg-brand-500'},{n:'Kavya N.',a:'₹3.19L',c:'bg-slate-400'},{n:'Sneha K.',a:'₹6.75L',c:'bg-red-400'}].map(r=>(
-                      <div key={r.n} className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-5 h-5 rounded-lg bg-brand-100 flex items-center justify-center text-[8px] font-bold text-brand-700">{r.n[0]}</div>
-                          <div><p className="text-[9px] font-semibold text-ink dark:text-slate-200">{r.n}</p><span className={`inline-block w-1 h-1 rounded-full ${r.c} mr-1`} /><span className="text-[8px] text-ink-tertiary">Active</span></div>
+
+                  {/* Quick Actions */}
+                  <div className="grid grid-cols-4 gap-1.5 flex-shrink-0">
+                    {[
+                      { label: 'New Quote',  g: 'from-brand-500 to-brand-700'  },
+                      { label: 'Add Client', g: 'from-teal-500 to-teal-700'    },
+                      { label: 'AI Proposal',g: 'from-accent-500 to-amber-600' },
+                      { label: 'Analytics',  g: 'from-[#8B5CF6] to-[#6D28D9]' },
+                    ].map(qa => (
+                      <div key={qa.label} className="bg-white dark:bg-[#0D1526] rounded-xl border border-surface-3 dark:border-[#1A2B42] p-2 flex flex-col gap-1">
+                        <div className={`w-5 h-5 rounded-lg bg-gradient-to-br ${qa.g} flex items-center justify-center shadow-sm`}>
+                          <div className="w-2 h-2 bg-white/70 rounded-sm" />
                         </div>
-                        <span className="text-[9px] font-bold text-ink dark:text-slate-300">{r.a}</span>
+                        <p className="text-[8px] font-bold text-ink dark:text-white leading-tight">{qa.label}</p>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Charts + activity row */}
+                  <div className="grid grid-cols-5 gap-2 flex-1 min-h-0">
+                    {/* Area chart */}
+                    <div className="col-span-3 bg-white dark:bg-[#0D1526] rounded-2xl border border-surface-3 dark:border-[#1A2B42] p-2.5 flex flex-col overflow-hidden">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <p className="text-[9px] font-bold text-ink dark:text-white">Revenue Trend</p>
+                        <span className="text-[7px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-full">+22%</span>
+                      </div>
+                      {/* Mini area chart SVG */}
+                      <div className="flex-1 relative min-h-0">
+                        <svg viewBox="0 0 200 60" className="w-full h-full" preserveAspectRatio="none">
+                          <defs>
+                            <linearGradient id="heroAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#1A7BFF" stopOpacity="0.25"/>
+                              <stop offset="100%" stopColor="#1A7BFF" stopOpacity="0.01"/>
+                            </linearGradient>
+                          </defs>
+                          {/* Grid */}
+                          {[15,30,45].map(y=>(
+                            <line key={y} x1="0" y1={y} x2="200" y2={y} stroke="#E2E8F0" strokeWidth="0.5" strokeDasharray="3,3"/>
+                          ))}
+                          {/* Area */}
+                          <path d="M0,48 C33,42 66,38 100,25 C133,12 166,8 200,4 L200,60 L0,60 Z" fill="url(#heroAreaGrad)"/>
+                          {/* Line */}
+                          <path d="M0,48 C33,42 66,38 100,25 C133,12 166,8 200,4" fill="none" stroke="#1A7BFF" strokeWidth="1.8" strokeLinecap="round"/>
+                          {/* End dot */}
+                          <circle cx="200" cy="4" r="3" fill="#1A7BFF" stroke="white" strokeWidth="1.2"/>
+                        </svg>
+                      </div>
+                      {/* Month labels */}
+                      <div className="flex justify-between mt-1">
+                        {['Oct','Nov','Dec','Jan','Feb','Mar'].map(m=>(
+                          <span key={m} className="text-[7px] text-ink-tertiary">{m}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Recent quotes */}
+                    <div className="col-span-2 bg-white dark:bg-[#0D1526] rounded-2xl border border-surface-3 dark:border-[#1A2B42] p-2.5 flex flex-col overflow-hidden">
+                      <p className="text-[9px] font-bold text-ink dark:text-white mb-1.5">Recent Quotes</p>
+                      <div className="space-y-1.5 flex-1">
+                        {[
+                          { n:'Priya S.',  a:'₹1.65L', s:'accepted', c:'bg-emerald-500' },
+                          { n:'Arjun M.',  a:'₹3.48L', s:'sent',     c:'bg-brand-500'   },
+                          { n:'Kavya N.',  a:'₹3.20L', s:'draft',    c:'bg-slate-400'   },
+                          { n:'Sneha K.',  a:'₹1.42L', s:'rejected', c:'bg-red-400'     },
+                        ].map(r => (
+                          <div key={r.n} className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-[7px] font-bold text-white flex-shrink-0">{r.n[0]}</div>
+                              <div>
+                                <p className="text-[8px] font-semibold text-ink dark:text-slate-200 leading-none">{r.n}</p>
+                                <div className="flex items-center gap-0.5 mt-0.5">
+                                  <span className={`w-1 h-1 rounded-full ${r.c}`}/>
+                                  <span className="text-[7px] text-ink-tertiary capitalize">{r.s}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-[8px] font-bold text-ink dark:text-slate-200">{r.a}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
