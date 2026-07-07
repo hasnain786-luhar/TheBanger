@@ -1,187 +1,254 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  TrendingUp, TrendingDown, FileText, CheckCircle, Clock,
-  DollarSign, BarChart2, Target, ArrowUpRight
-} from 'lucide-react';
-import { Card } from '../components/ui/Card';
-import { monthlyData } from '../data/mockData';
+import { TrendingUp, TrendingDown, DollarSign, FileText, Users, Target, Award } from 'lucide-react';
+import { monthlyData, quotes, clients } from '../data/mockData';
 
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
-const item = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
+const periods = ['3M', '6M', '1Y'] as const;
+type Period = typeof periods[number];
 
-const stats = [
-  { label: 'Total Revenue',   value: '₹24.36L', change: '+18.2%', trend: 'up',   icon: DollarSign,  color: 'text-brand-600',   bg: 'bg-brand-50 dark:bg-brand-900/20' },
-  { label: 'Conversion Rate', value: '68.4%',   change: '+4.1%',  trend: 'up',   icon: Target,      color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-  { label: 'Accepted',        value: '48',       change: '+7',     trend: 'up',   icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-  { label: 'Pending',         value: '12',       change: '-3',     trend: 'down', icon: Clock,       color: 'text-amber-600',   bg: 'bg-amber-50 dark:bg-amber-900/20' },
-  { label: 'Total Quotes',    value: '70',       change: '+12',    trend: 'up',   icon: FileText,    color: 'text-brand-600',   bg: 'bg-brand-50 dark:bg-brand-900/20' },
-  { label: 'Avg Value',       value: '₹2.46L',  change: '+8.3%',  trend: 'up',   icon: BarChart2,   color: 'text-violet-600',  bg: 'bg-violet-50 dark:bg-violet-900/20' },
+const kpis = [
+  { label: 'Total Revenue',   value: '₹24.4L', change: '+22%', up: true,  icon: DollarSign, color: 'brand' },
+  { label: 'Quotes Sent',     value: '74',      change: '+31%', up: true,  icon: FileText,   color: 'teal'  },
+  { label: 'Win Rate',        value: '68.4%',   change: '+4%',  up: true,  icon: Target,     color: 'accent'},
+  { label: 'Avg Quote Value', value: '₹2.46L',  change: '+8%',  up: true,  icon: Award,      color: 'brand' },
+  { label: 'Active Clients',  value: '28',      change: '+12%', up: true,  icon: Users,      color: 'teal'  },
+  { label: 'Overdue Quotes',  value: '3',       change: '-2',   up: false, icon: FileText,   color: 'amber' },
 ];
 
-function AreaChart() {
+const colorMap: Record<string, string> = {
+  brand: 'from-brand-500 to-brand-700 shadow-[0_4px_16px_rgba(26,123,255,0.30)]',
+  teal:  'from-teal-500 to-teal-700 shadow-[0_4px_16px_rgba(11,173,160,0.28)]',
+  accent:'from-accent-500 to-accent-700 shadow-[0_4px_16px_rgba(245,168,0,0.28)]',
+  amber: 'from-amber-500 to-orange-600 shadow-[0_4px_16px_rgba(245,158,11,0.28)]',
+};
+
+function GradientAreaChart() {
   const data = monthlyData;
   const max = Math.max(...data.map(d => d.revenue));
-  const w = 600, h = 140;
-  const pts = data.map((d, i) => {
-    const x = (i / (data.length - 1)) * w;
-    const y = h - ((d.revenue / max) * (h - 20)) - 10;
-    return { x, y };
-  });
-  const pathD = pts.map((p, i) => i === 0 ? `M ${p.x} ${p.y}` : `C ${pts[i-1].x+50},${pts[i-1].y} ${p.x-50},${p.y} ${p.x},${p.y}`).join(' ');
-  const areaD = `${pathD} L ${w} ${h} L 0 ${h} Z`;
+  const W = 500, H = 120;
+  const pad = { l: 48, r: 16, t: 10, b: 28 };
+  const chartW = W - pad.l - pad.r;
+  const chartH = H - pad.t - pad.b;
+
+  const pts = data.map((d, i) => ({
+    x: pad.l + (i / (data.length - 1)) * chartW,
+    y: pad.t + chartH - (d.revenue / max) * chartH,
+    v: d.revenue,
+    m: d.month,
+  }));
+
+  const smooth = (pts: {x:number;y:number}[]) => {
+    let d = `M ${pts[0].x},${pts[0].y}`;
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i - 1], curr = pts[i];
+      const cp1x = prev.x + (curr.x - prev.x) * 0.5;
+      const cp2x = curr.x - (curr.x - prev.x) * 0.5;
+      d += ` C ${cp1x},${prev.y} ${cp2x},${curr.y} ${curr.x},${curr.y}`;
+    }
+    return d;
+  };
+
+  const linePath = smooth(pts);
+  const areaPath = `${linePath} L ${pts[pts.length-1].x},${H - pad.b} L ${pts[0].x},${H - pad.b} Z`;
+
   return (
-    <div className="mt-4">
-      <svg viewBox={`0 0 ${w} ${h+20}`} className="w-full" preserveAspectRatio="none" style={{ height: 120 }}>
+    <div className="relative w-full" style={{ paddingBottom: '28%' }}>
+      <svg viewBox={`0 0 ${W} ${H}`} className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
         <defs>
-          <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#2563eb" stopOpacity="0.15" />
-            <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
+          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#1A7BFF" stopOpacity="0.3" />
+            <stop offset="80%" stopColor="#1A7BFF" stopOpacity="0.02" />
           </linearGradient>
+          <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#4D9BFF" />
+            <stop offset="100%" stopColor="#1A7BFF" />
+          </linearGradient>
+          <filter id="lineShadow">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
         </defs>
-        <path d={areaD} fill="url(#ag)" />
-        <path d={pathD} fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" />
-        {pts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="4" fill="white" stroke="#2563eb" strokeWidth="2" />)}
+
+        {/* Grid lines */}
+        {[0, 0.25, 0.5, 0.75, 1].map(r => (
+          <line key={r}
+            x1={pad.l} y1={pad.t + chartH * r}
+            x2={W - pad.r} y2={pad.t + chartH * r}
+            stroke="currentColor" strokeWidth="0.5" className="text-surface-3 dark:text-[#1A2B42]" strokeDasharray="4,4" />
+        ))}
+
+        {/* Y labels */}
+        {[{r:0,l:'6L'},{r:0.5,l:'3L'},{r:1,l:'0'}].map(({r,l}) => (
+          <text key={l} x={pad.l - 6} y={pad.t + chartH * r + 4} textAnchor="end"
+            className="text-ink-tertiary" fontSize="9" fill="currentColor">{l}</text>
+        ))}
+
+        <path d={areaPath} fill="url(#chartGrad)" />
+        <motion.path d={linePath} fill="none" stroke="url(#lineGrad)" strokeWidth="2.5"
+          strokeLinecap="round" strokeLinejoin="round" filter="url(#lineShadow)"
+          initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 1.6, ease: [0.4,0,0.2,1] }} />
+
+        {pts.map((p, i) => (
+          <g key={i}>
+            <motion.circle cx={p.x} cy={p.y} r={i === pts.length - 1 ? 5 : 4}
+              fill={i === pts.length - 1 ? '#1A7BFF' : 'white'}
+              stroke="#1A7BFF" strokeWidth="2"
+              initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.6 + i * 0.08, duration: 0.3 }} />
+            <text x={p.x} y={H - 2} textAnchor="middle" fontSize="9" fill="currentColor" className="text-ink-tertiary">{p.m}</text>
+          </g>
+        ))}
       </svg>
-      <div className="flex justify-between px-1 -mt-1">
-        {data.map(d => <span key={d.month} className="text-xs text-ink-tertiary flex-1 text-center">{d.month}</span>)}
-      </div>
     </div>
   );
 }
 
-function DonutChart({ value, color, label }: { value: number; color: string; label: string }) {
-  const r = 30, circ = 2 * Math.PI * r, dash = (value / 100) * circ;
+function DonutChart({ segments }: { segments: { label: string; value: number; color: string; glow: string }[] }) {
+  const total = segments.reduce((s, d) => s + d.value, 0);
+  const cx = 60, cy = 60, r = 44, stroke = 14;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+
   return (
-    <div className="flex flex-col items-center gap-1.5">
-      <div className="relative w-16 h-16 sm:w-20 sm:h-20">
-        <svg viewBox="0 0 72 72" className="w-full h-full -rotate-90">
-          <circle cx="36" cy="36" r={r} fill="none" stroke="#F1F5F9" strokeWidth="7" className="dark:stroke-slate-800" />
-          <motion.circle cx="36" cy="36" r={r} fill="none" stroke={color} strokeWidth="7"
-            strokeDasharray={`0 ${circ}`}
-            animate={{ strokeDasharray: `${dash} ${circ}` }}
-            transition={{ duration: 1, ease: [0.4,0,0.2,1], delay: 0.3 }}
-            strokeLinecap="round" />
+    <div className="flex items-center gap-6">
+      <div className="relative w-[120px] h-[120px] flex-shrink-0">
+        <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
+          {segments.map((seg, i) => {
+            const pct = seg.value / total;
+            const dashArr = circ * pct;
+            const dashOff = circ - dashArr + offset * circ / circ;
+            const startOff = offset;
+            offset += pct;
+            return (
+              <motion.circle key={i}
+                cx={cx} cy={cy} r={r}
+                fill="none" stroke={seg.color}
+                strokeWidth={stroke}
+                strokeLinecap="round"
+                strokeDasharray={`${dashArr} ${circ - dashArr}`}
+                strokeDashoffset={-startOff * circ + circ * 0.25}
+                initial={{ strokeDasharray: `0 ${circ}` }}
+                animate={{ strokeDasharray: `${dashArr} ${circ - dashArr}` }}
+                transition={{ duration: 1, delay: i * 0.15, ease: [0.4,0,0.2,1] }}
+                style={{ filter: `drop-shadow(0 0 4px ${seg.glow})` }}
+              />
+            );
+          })}
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xs sm:text-sm font-bold text-ink dark:text-white">{value}%</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-xl font-black text-ink dark:text-white">{total}</span>
+          <span className="text-[10px] text-ink-tertiary">total</span>
         </div>
       </div>
-      <p className="text-[10px] sm:text-xs text-ink-tertiary text-center leading-tight">{label}</p>
+      <div className="flex-1 space-y-2">
+        {segments.map(s => (
+          <div key={s.label} className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: s.color }} />
+            <span className="text-xs text-ink-secondary dark:text-slate-400 flex-1">{s.label}</span>
+            <span className="text-xs font-bold text-ink dark:text-white">{s.value}</span>
+            <span className="text-[10px] text-ink-tertiary w-8 text-right">{Math.round(s.value/total*100)}%</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
 export function AnalyticsPage() {
-  const [period, setPeriod] = useState<'3m'|'6m'|'1y'>('6m');
-  const topClients = [
-    { name: 'Kavya Nair',   value: 920000, quotes: 6, rate: 83 },
-    { name: 'Sneha Kapoor', value: 675000, quotes: 3, rate: 67 },
-    { name: 'Priya Sharma', value: 485000, quotes: 4, rate: 75 },
-    { name: 'Arjun Mehta',  value: 320000, quotes: 2, rate: 50 },
-  ];
+  const [period, setPeriod] = useState<Period>('6M');
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-4 sm:space-y-5 lg:space-y-6">
-      <motion.div variants={item} className="flex items-center justify-between">
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-ink dark:text-white">Analytics</h2>
-          <p className="text-xs text-ink-tertiary mt-0.5">Performance overview</p>
+          <h2 className="text-xl font-black text-ink dark:text-white">Analytics</h2>
+          <p className="text-xs text-ink-tertiary mt-0.5">Business performance overview</p>
         </div>
-        <div className="flex bg-surface-2 dark:bg-slate-800 rounded-2xl p-1">
-          {(['3m','6m','1y'] as const).map(p => (
-            <motion.button key={p} onClick={() => setPeriod(p)} whileTap={{ scale: 0.95 }}
-              className={`relative px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all ${period===p?'text-ink dark:text-white':'text-ink-tertiary'}`}>
-              {period===p && <motion.div layoutId="periodPill" className="absolute inset-0 bg-white dark:bg-slate-700 rounded-xl shadow-sm" transition={{ type:'spring', bounce:0.2 }} />}
-              <span className="relative z-10">{p==='3m'?'3M':p==='6m'?'6M':'1Y'}</span>
-            </motion.button>
+        <div className="flex bg-surface-2 dark:bg-[#0D1828] border border-surface-3 dark:border-[#1A2B42] rounded-2xl p-1">
+          {periods.map(p => (
+            <button key={p} onClick={() => setPeriod(p)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                period === p
+                  ? 'bg-white dark:bg-[#111B2E] text-ink dark:text-white shadow-sm'
+                  : 'text-ink-tertiary hover:text-ink dark:hover:text-slate-300'
+              }`}>{p}</button>
           ))}
         </div>
-      </motion.div>
+      </div>
 
-      {/* KPI: 2-col mobile → 3-col lg */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {stats.map(s => (
-          <motion.div key={s.label} variants={item}>
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-9 h-9 rounded-2xl ${s.bg} flex items-center justify-center`}><s.icon size={16} className={s.color} /></div>
-                <span className={`text-xs font-bold flex items-center gap-1 ${s.trend==='up'?'text-emerald-600':'text-red-500'}`}>
-                  {s.trend==='up'?<TrendingUp size={11}/>:<TrendingDown size={11}/>}{s.change}
-                </span>
+      {/* KPI Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+        {kpis.map((k, i) => (
+          <motion.div key={k.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
+            <div className="card group hover:-translate-y-1 hover:shadow-card-hover dark:hover:shadow-card-dark-hover transition-all duration-300">
+              <div className={`w-10 h-10 rounded-2xl mb-3 flex items-center justify-center bg-gradient-to-br ${colorMap[k.color]}`}>
+                <k.icon size={18} className="text-white" />
               </div>
-              <p className="text-xl sm:text-2xl font-bold text-ink dark:text-white">{s.value}</p>
-              <p className="text-xs text-ink-tertiary mt-0.5">{s.label}</p>
-            </Card>
+              <p className="text-2xl font-black text-ink dark:text-white leading-none">{k.value}</p>
+              <p className="text-xs text-ink-secondary mt-1">{k.label}</p>
+              <div className={`inline-flex items-center gap-1 mt-2 text-xs font-bold ${k.up ? 'stat-pill-up' : 'stat-pill-down'}`}>
+                {k.up ? <TrendingUp size={11} /> : <TrendingDown size={11} />}{k.change}
+              </div>
+            </div>
           </motion.div>
         ))}
       </div>
 
-      {/* Area chart */}
-      <motion.div variants={item}>
-        <Card>
-          <div className="flex items-center justify-between">
-            <div><h3 className="text-sm font-bold text-ink dark:text-white">Monthly Revenue</h3><p className="text-xs text-ink-tertiary">Last 6 months</p></div>
-            <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 rounded-full"><TrendingUp size={11}/>+22%</span>
+      {/* Revenue Chart */}
+      <div className="card">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h3 className="text-sm font-bold text-ink dark:text-white">Revenue Over Time</h3>
+            <p className="text-xs text-ink-tertiary mt-0.5">Monthly breakdown — {period}</p>
           </div>
-          <AreaChart />
-        </Card>
-      </motion.div>
+          <span className="stat-pill-up"><TrendingUp size={11} />+22% vs prior</span>
+        </div>
+        <GradientAreaChart />
+      </div>
 
-      {/* Donuts: 2×2 on mobile */}
-      <motion.div variants={item}>
-        <Card>
-          <h3 className="text-sm font-bold text-ink dark:text-white mb-1">Quote Outcomes</h3>
-          <p className="text-xs text-ink-tertiary mb-5">Distribution this period</p>
-          <div className="grid grid-cols-4 gap-3 sm:gap-4">
-            <DonutChart value={68} color="#16a34a" label="Accepted" />
-            <DonutChart value={14} color="#dc2626" label="Rejected" />
-            <DonutChart value={11} color="#f59e0b" label="Pending" />
-            <DonutChart value={7}  color="#94a3b8" label="Expired" />
-          </div>
-        </Card>
-      </motion.div>
+      {/* Bottom row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Quote Status Donut */}
+        <div className="card">
+          <h3 className="text-sm font-bold text-ink dark:text-white mb-4">Quote Distribution</h3>
+          <DonutChart segments={[
+            { label: 'Accepted', value: 14, color: '#10B981', glow: '#10B98180' },
+            { label: 'Sent',     value: 3,  color: '#1A7BFF', glow: '#1A7BFF80' },
+            { label: 'Pending',  value: 1,  color: '#F59E0B', glow: '#F59E0B80' },
+            { label: 'Rejected', value: 1,  color: '#EF4444', glow: '#EF444480' },
+          ]} />
+        </div>
 
-      {/* Breakdown + Top clients: stacked mobile → side by side lg */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-        <motion.div variants={item}>
-          <Card>
-            <h3 className="text-sm font-bold text-ink dark:text-white mb-5">Status Breakdown</h3>
-            {[{s:'Accepted',n:48,t:70,c:'bg-emerald-500'},{s:'Sent',n:12,t:70,c:'bg-brand-500'},{s:'Rejected',n:7,t:70,c:'bg-red-500'},{s:'Draft',n:2,t:70,c:'bg-slate-300 dark:bg-slate-600'},{s:'Expired',n:1,t:70,c:'bg-amber-400'}].map(row=>(
-              <div key={row.s} className="mb-4 last:mb-0">
-                <div className="flex justify-between text-sm mb-1.5">
-                  <span className="font-semibold text-ink dark:text-slate-200">{row.s}</span>
-                  <span className="text-ink-tertiary text-xs">{row.n} · {Math.round((row.n/row.t)*100)}%</span>
-                </div>
-                <div className="h-2 w-full bg-surface-2 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <motion.div initial={{width:0}} animate={{width:`${(row.n/row.t)*100}%`}} transition={{duration:0.9,ease:[0.4,0,0.2,1]}} className={`h-full rounded-full ${row.c}`} />
-                </div>
-              </div>
-            ))}
-          </Card>
-        </motion.div>
-        <motion.div variants={item}>
-          <Card>
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-sm font-bold text-ink dark:text-white">Top Clients</h3>
-              <ArrowUpRight size={15} className="text-ink-tertiary" />
-            </div>
-            {topClients.map((c, i) => (
-              <motion.div key={c.name} initial={{opacity:0,x:-10}} animate={{opacity:1,x:0}} transition={{delay:i*0.08}} className="flex items-center justify-between mb-4 last:mb-0">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-ink-tertiary w-4">#{i+1}</span>
-                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-sm font-bold shadow-sm">{c.name[0]}</div>
-                  <div>
-                    <p className="text-sm font-semibold text-ink dark:text-slate-200">{c.name}</p>
-                    <p className="text-xs text-ink-tertiary">{c.quotes} quotes · {c.rate}%</p>
+        {/* Top Clients */}
+        <div className="card">
+          <h3 className="text-sm font-bold text-ink dark:text-white mb-4">Top Clients by Value</h3>
+          <div className="space-y-3">
+            {clients.sort((a, b) => b.totalValue - a.totalValue).slice(0, 4).map((c, i) => {
+              const max = clients[0]?.totalValue || 1;
+              const pct = (c.totalValue / Math.max(...clients.map(cl => cl.totalValue))) * 100;
+              return (
+                <div key={c.id} className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-ink-tertiary w-3">{i + 1}</span>
+                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{c.name[0]}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="font-semibold text-ink dark:text-slate-200 truncate">{c.name}</span>
+                      <span className="font-bold text-ink dark:text-white ml-2">₹{(c.totalValue/1000).toFixed(0)}K</span>
+                    </div>
+                    <div className="progress-track">
+                      <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }}
+                        transition={{ duration: 0.9, delay: i * 0.1, ease: [0.4,0,0.2,1] }}
+                        className="progress-fill-brand" />
+                    </div>
                   </div>
                 </div>
-                <span className="text-sm font-bold text-ink dark:text-white">₹{(c.value/1000).toFixed(0)}K</span>
-              </motion.div>
-            ))}
-          </Card>
-        </motion.div>
+              );
+            })}
+          </div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
