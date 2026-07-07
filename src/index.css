@@ -1,0 +1,366 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────
+   QUOTERA AI — Premium Design System
+   Palette: Deep Azure + Warm Saffron-Gold + Teal + Rich Darks
+────────────────────────────────────────────────────────────── */
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply font-sans bg-surface-1 text-ink;
+    font-feature-settings: "cv02","cv03","cv04","cv11";
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* ── Dark mode base ───────────────────────────────────── */
+  .dark body {
+    background: #070B14;
+    @apply text-slate-100;
+  }
+
+  ::selection { @apply bg-brand-100 text-brand-900; }
+
+  input, select, textarea { font-size: 16px; }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-surface-4 rounded-full; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MESH BACKGROUND — subtle animated aurora behind pages
+────────────────────────────────────────────────────────────── */
+@layer base {
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 900px 600px at 70% -10%, rgba(26,123,255,0.055) 0%, transparent 70%),
+      radial-gradient(ellipse 600px 500px at -10% 60%, rgba(11,173,160,0.04) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 400px at 100% 80%, rgba(245,168,0,0.03) 0%, transparent 70%);
+  }
+  .dark body::before {
+    background:
+      radial-gradient(ellipse 900px 600px at 70% -10%, rgba(26,123,255,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 600px 500px at -10% 60%, rgba(11,173,160,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 400px at 100% 80%, rgba(245,168,0,0.04) 0%, transparent 70%);
+  }
+}
+
+@layer components {
+
+  /* ═══════════════════════════════════════════════════════
+     BUTTONS
+  ═══════════════════════════════════════════════════════ */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-semibold
+      transition-all duration-200 select-none outline-none
+      focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500/50
+      disabled:opacity-50 disabled:pointer-events-none
+      min-h-[48px] active:scale-[0.97];
+  }
+
+  /* Azure electric primary */
+  .btn-primary {
+    @apply btn text-sm text-white rounded-2xl px-5
+      bg-gradient-to-b from-[#3B92FF] to-[#0050CC]
+      shadow-[0_1px_0_rgba(255,255,255,0.15)_inset,0_4px_16px_-2px_rgba(26,123,255,0.50)]
+      hover:shadow-[0_1px_0_rgba(255,255,255,0.15)_inset,0_8px_24px_-2px_rgba(26,123,255,0.60)]
+      hover:from-[#5AABFF] hover:to-[#1A7BFF];
+  }
+
+  /* Clean white/near-white secondary */
+  .btn-secondary {
+    @apply btn text-sm text-ink rounded-2xl px-5
+      bg-white border border-surface-3
+      shadow-[0_1px_3px_rgba(12,17,29,0.07),0_0_0_1px_rgba(12,17,29,0.04)]
+      hover:shadow-[0_4px_12px_rgba(12,17,29,0.09)]
+      hover:border-surface-4
+      dark:bg-[#111827] dark:border-[#1F2937] dark:text-slate-200
+      dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] dark:hover:border-[#374151];
+  }
+
+  /* Ghost — no bg, just text */
+  .btn-ghost {
+    @apply btn text-sm text-ink-secondary rounded-xl px-3
+      hover:bg-surface-2 hover:text-ink dark:hover:bg-[#1A2235];
+  }
+
+  /* Gold accent button — for special CTAs */
+  .btn-accent {
+    @apply btn text-sm text-white rounded-2xl px-5
+      bg-gradient-to-b from-[#FFD233] to-[#E09000]
+      shadow-[0_1px_0_rgba(255,255,255,0.2)_inset,0_4px_16px_-2px_rgba(245,168,0,0.45)]
+      hover:shadow-glow-gold;
+  }
+
+  /* Danger */
+  .btn-danger {
+    @apply btn text-sm text-white rounded-2xl px-5
+      bg-gradient-to-b from-[#FF6B6B] to-[#D32F2F]
+      shadow-[0_4px_12px_-2px_rgba(240,68,56,0.40)];
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     CARDS
+  ═══════════════════════════════════════════════════════ */
+  .card {
+    @apply bg-white rounded-3xl p-5 sm:p-6
+      shadow-card border border-surface-3/70
+      dark:bg-[#0F1724] dark:border-[#1C2B45];
+  }
+
+  .card[data-padding="none"] { @apply p-0; }
+  .card[data-padding="sm"]   { @apply p-3 sm:p-4; }
+
+  .card-hover {
+    @apply card transition-all duration-300 cursor-pointer
+      hover:shadow-card-hover hover:-translate-y-[2px];
+  }
+
+  /* Glassmorphism card — for modals, drawers, overlays */
+  .card-glass {
+    @apply rounded-3xl p-5
+      bg-white/70 dark:bg-[#0F1724]/80
+      backdrop-blur-2xl
+      border border-white/50 dark:border-[#1C2B45]/60
+      shadow-glass;
+  }
+
+  /* Gradient-topped accent cards */
+  .card-brand { background-image: theme('backgroundImage.card-brand-top'), white; }
+  .card-gold  { background-image: theme('backgroundImage.card-gold-top'),  white; }
+  .card-teal  { background-image: theme('backgroundImage.card-teal-top'),  white; }
+
+  /* ═══════════════════════════════════════════════════════
+     INPUTS
+  ═══════════════════════════════════════════════════════ */
+  .field {
+    @apply w-full px-4 py-3.5 text-[15px] text-ink bg-white border border-surface-3
+      rounded-2xl placeholder-ink-tertiary min-h-[48px]
+      focus:outline-none focus:ring-2 focus:ring-brand-500/25 focus:border-brand-400
+      focus:shadow-[0_0_0_4px_rgba(26,123,255,0.08)]
+      transition-all duration-200 shadow-xs
+      dark:bg-[#0F1724] dark:border-[#1C2B45] dark:text-slate-100
+      dark:placeholder-[#4B5565]
+      dark:focus:ring-brand-600/30 dark:focus:border-brand-600;
+  }
+
+  .field-sm {
+    @apply field text-sm py-2.5 min-h-[40px] px-3.5;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     BADGES
+  ═══════════════════════════════════════════════════════ */
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold
+      rounded-full tracking-wide;
+  }
+
+  .badge-draft    {
+    @apply badge
+      bg-[#F2F4F7] text-[#4B5565]
+      dark:bg-[#1A2235] dark:text-[#8A94A6];
+  }
+  .badge-sent     {
+    @apply badge
+      bg-brand-50 text-brand-700 ring-1 ring-brand-200/60
+      dark:bg-brand-950/60 dark:text-brand-300 dark:ring-brand-800/40;
+  }
+  .badge-accepted {
+    @apply badge
+      bg-success-50 text-success-700 ring-1 ring-[#A6F4C5]/60
+      dark:bg-[#022C22] dark:text-[#6CE9A6] dark:ring-[#064E3B]/50;
+  }
+  .badge-rejected {
+    @apply badge
+      bg-danger-50 text-danger-700 ring-1 ring-[#FECDC9]/60
+      dark:bg-[#2D1B1B] dark:text-[#FDA29B] dark:ring-[#7A271A]/50;
+  }
+  .badge-expired  {
+    @apply badge
+      bg-warning-50 text-warning-700 ring-1 ring-[#FEDF89]/60
+      dark:bg-[#2D1F0A] dark:text-[#FEC84B] dark:ring-[#7A4F00]/50;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     NAVIGATION
+  ═══════════════════════════════════════════════════════ */
+  .nav-item {
+    @apply relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+      transition-all duration-200 cursor-pointer select-none min-h-[44px];
+  }
+  .nav-item-active {
+    @apply text-brand-700 dark:text-brand-300;
+  }
+  .nav-item-idle {
+    @apply text-ink-secondary hover:text-ink hover:bg-surface-2
+      dark:text-[#8A94A6] dark:hover:text-slate-100 dark:hover:bg-[#1A2235];
+  }
+
+  /* ── Bottom Nav (mobile) ────────────────────────────── */
+  .bottom-nav-item {
+    @apply flex-1 flex flex-col items-center justify-center gap-1 py-2 min-h-[56px]
+      text-ink-tertiary transition-all duration-200 cursor-pointer select-none active:scale-90;
+  }
+  .bottom-nav-item-active { @apply text-brand-600 dark:text-brand-400; }
+
+  /* ═══════════════════════════════════════════════════════
+     PAGE CONTAINER
+  ═══════════════════════════════════════════════════════ */
+  .page-container {
+    @apply px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8
+      max-w-[1400px] mx-auto
+      pb-28 sm:pb-10;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     SECTION LABELS
+  ═══════════════════════════════════════════════════════ */
+  .section-label {
+    @apply text-[10px] font-bold uppercase tracking-[0.12em] text-ink-tertiary;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     SKELETON
+  ═══════════════════════════════════════════════════════ */
+  .skeleton {
+    @apply rounded-2xl bg-surface-2 animate-pulse dark:bg-[#1A2235];
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     DIVIDER
+  ═══════════════════════════════════════════════════════ */
+  .divider { @apply border-t border-surface-3 dark:border-[#1C2B45]; }
+
+  /* ═══════════════════════════════════════════════════════
+     FAB — Floating Action Button
+  ═══════════════════════════════════════════════════════ */
+  .fab {
+    @apply fixed z-40 flex items-center gap-2.5 font-bold text-sm text-white
+      rounded-2xl px-5 min-h-[52px]
+      bg-gradient-to-br from-[#3B92FF] to-[#0050CC]
+      shadow-[0_4px_24px_rgba(26,123,255,0.50),0_1px_0_rgba(255,255,255,0.12)_inset]
+      bottom-[calc(68px+env(safe-area-inset-bottom)+12px)] right-4
+      sm:bottom-6 sm:right-6
+      active:scale-95;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     STAT PILL — small colored metric chips
+  ═══════════════════════════════════════════════════════ */
+  .stat-pill {
+    @apply flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold;
+  }
+  .stat-pill-up   { @apply stat-pill bg-success-50 text-success-700 dark:bg-[#022C22] dark:text-[#6CE9A6]; }
+  .stat-pill-down { @apply stat-pill bg-warning-50 text-warning-700 dark:bg-[#2D1F0A] dark:text-[#FEC84B]; }
+
+  /* ═══════════════════════════════════════════════════════
+     PROGRESS BAR
+  ═══════════════════════════════════════════════════════ */
+  .progress-track {
+    @apply h-1.5 w-full bg-surface-2 dark:bg-[#1A2235] rounded-full overflow-hidden;
+  }
+  .progress-fill-brand { @apply h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600; }
+  .progress-fill-gold  { @apply h-full rounded-full bg-gradient-to-r from-accent-400 to-accent-600; }
+  .progress-fill-teal  { @apply h-full rounded-full bg-gradient-to-r from-teal-400 to-teal-600; }
+}
+
+@layer utilities {
+  .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  /* Premium text gradients */
+  .text-gradient-brand {
+    @apply bg-gradient-to-br from-brand-500 via-brand-600 to-brand-800 bg-clip-text text-transparent;
+  }
+  .text-gradient-gold {
+    @apply bg-gradient-to-r from-accent-500 via-accent-400 to-accent-600 bg-clip-text text-transparent;
+  }
+  .text-gradient-teal {
+    @apply bg-gradient-to-r from-teal-500 to-teal-700 bg-clip-text text-transparent;
+  }
+  /* Legacy alias */
+  .text-gradient { @apply text-gradient-brand; }
+
+  /* Glassmorphism utility */
+  .glass {
+    @apply bg-white/80 backdrop-blur-2xl border border-white/40 shadow-glass
+      dark:bg-[#0F1724]/80 dark:border-[#1C2B45]/60;
+  }
+
+  /* Noise texture overlay for premium feel */
+  .noise::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+
+  /* Safe area */
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .pt-safe { padding-top: env(safe-area-inset-top); }
+
+  /* Premium shimmer on hover */
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    transition: none;
+  }
+  .shimmer:hover::after {
+    animation: shimmer 0.7s ease;
+  }
+  @keyframes shimmer {
+    to { transform: translateX(100%); }
+  }
+
+  /* Glow ring utilities */
+  .ring-brand-glow { box-shadow: 0 0 0 4px rgba(26,123,255,0.18); }
+  .ring-gold-glow  { box-shadow: 0 0 0 4px rgba(245,168,0,0.18); }
+  .ring-teal-glow  { box-shadow: 0 0 0 4px rgba(11,173,160,0.18); }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   DARK MODE OVERRIDES
+────────────────────────────────────────────────────────────── */
+.dark .card {
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04),
+    0 2px 8px rgba(0,0,0,0.35);
+}
+.dark .card:hover {
+  box-shadow:
+    0 0 0 1px rgba(26,123,255,0.20),
+    0 8px 32px rgba(0,0,0,0.45);
+}
+
+/* Sidebar dark scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+  background: #1C2B45;
+}
